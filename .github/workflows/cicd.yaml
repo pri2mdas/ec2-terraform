@@ -38,6 +38,12 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
+
+#      - name: Configure Git authentication
+#        run: |
+#          git config --global url."https://x-access-token:${GH_MODULE_TOKEN}@github.com/".insteadOf "https://github.com/"
+#        env:
+#          GH_MODULE_TOKEN: ${{ secrets.GH_MODULE_TOKEN }}
       
       - name: Terraform Init
         run: terraform init
