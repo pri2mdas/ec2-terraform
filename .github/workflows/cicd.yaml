@@ -1,0 +1,61 @@
+name: Terraform Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-infra-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug Secrets & GitHub Context
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Role ARN starts with: ${{ startsWith(secrets.AWS_IAM_ROLE, 'arn:aws:iam') }}"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@4
+        with:
+          aws-region: ap-south-1
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+      
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Terraform Format Check
+        run: terraform fmt 
+        working-directory: ./terraform
+      
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./terraform
+      
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ./terraform
+      
+      - name: Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./terraform
