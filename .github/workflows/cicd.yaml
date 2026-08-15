@@ -29,7 +29,7 @@ jobs:
           echo "Role ARN starts with: ${{ startsWith(secrets.AWS_IAM_ROLE, 'arn:aws:iam') }}"
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@6
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ap-south-1
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
